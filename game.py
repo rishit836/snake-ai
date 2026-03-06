@@ -1,53 +1,57 @@
-import pygame 
-import random
 import numpy as np
+import random
 import sys
+import pygame
 
 pygame.init()
 
-# init variables
-grid = np.zeros((20,20))
-grid_size = 20
-WIDTH,HEIGHT = grid.shape[0]*grid_size+3, grid.shape[1]*grid_size+3
+# variables
+head_size = 25
+WIDTH,HEIGHT = 500,500
 screen = pygame.display.set_mode((WIDTH,HEIGHT))
-pygame.display.set_caption("snake ai goes brr")
+pygame.display.set_caption("snake ai goess brr")
 clock = pygame.time.Clock()
-grid[(9,9)]=1 # snake head
-grid[(random.randint(0,len(grid)-1),random.randint(0,len(grid[1])-1))]=2
-
-def draw_board(grid,screen):
-    for r in range(len(grid)):
-        for c,col in enumerate(grid[r]):
-            if col == 0:
-                rect_obj = pygame.Rect((grid_size*c+3,grid_size*r+3),(grid_size-3,grid_size-3))
-                pygame.draw.rect(screen,"black",rect_obj)
-            if col ==1:
-                rect_obj = pygame.Rect((grid_size*c+3,grid_size*r+3),(grid_size-3,grid_size-3))
-                pygame.draw.rect(screen,"green",rect_obj)
-            if col == 2:
-                rect_obj = pygame.Rect((grid_size*c+3,grid_size*r+3),(grid_size-3,grid_size-3))
-                pygame.draw.rect(screen,"red",rect_obj)
+head_x,head_y = (WIDTH-head_size)/2,(HEIGHT-head_size)/2
+fruit_x,fruit_y = random.randint(0,WIDTH-head_size),random.randint(0,HEIGHT-head_size)
+velx,vely=0,0
 
 
-def move_snake(grid,vel_x,vel_y=0):
-    
-    indices = np.where(grid==1)
-    if vel_x>0:
-        x = min(indices[1]+1,len(grid[1])-1)
-        grid[indices]=0
-        grid[(indices[0],x)]=1
-
-    
-
+def draw_snake(screen,head_x,head_y):
+    rect_obj = pygame.Rect((head_x,head_y),(head_size,head_size))
+    pygame.draw.rect(screen,"green",rect_obj)
+    pygame.display.flip()
 
 while True:
     for event in pygame.event.get():
-        if event.type == pygame.QUIT:
+        if event.type== pygame.QUIT:
             pygame.quit()
             sys.exit()
             break
-    screen.fill("white")
-    draw_board(grid,screen)
-    move_snake(grid)
-    pygame.display.update()
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_RIGHT:
+                velx=5
+                vely=0
+            if event.key == pygame.K_LEFT:
+                velx=-5
+                vely=0
+            if event.key == pygame.K_UP:
+                velx=0
+                vely=-5
+            if event.key == pygame.K_DOWN:
+                velx=0
+                vely=5
+            
+
+    screen.fill("black")
+    draw_snake(screen,head_x,head_y)
+    head_x+=velx
+    head_y+=vely
+    pygame.display.flip()
     clock.tick(60)
+    # game over
+    if not 0<=head_x<=WIDTH:
+        print("game over bitch!")
+        break
+    if not 0<=head_y<=HEIGHT:
+        print("game over bitch!")
+        break
