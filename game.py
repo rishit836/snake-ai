@@ -15,9 +15,21 @@ clock = pygame.time.Clock()
 fruit_x,fruit_y = random.randrange(0, WIDTH, head_size),random.randrange(0, HEIGHT, head_size)
 velx,vely=0,0
 score=0
-snake = [((WIDTH-head_size)//2,(HEIGHT-head_size)//2)]
+snake = [((WIDTH // (2 * head_size)) * head_size, (HEIGHT // (2 * head_size)) * head_size)]
 move_delay = 6
 frame_count = 0
+show_grid = False
+
+# numpy : 0=empty, 1=snake, 2=fruit
+grid_rows, grid_cols = HEIGHT // head_size, WIDTH // head_size
+grid = np.zeros((grid_rows, grid_cols), dtype=np.int8)
+
+def update_grid(snake, fruit_x, fruit_y):
+    grid[:] = 0
+    for (sx, sy) in snake:
+        grid[sy // head_size, sx // head_size] = 1
+    grid[fruit_y // head_size, fruit_x // head_size] = 2
+    return grid
 
 def draw_snake(screen,snake):
     for idx,body in enumerate(snake):
@@ -57,11 +69,29 @@ while True:
             elif event.key == pygame.K_DOWN and vely == 0:
                 velx = 0
                 vely = head_size
-            
+
+            elif event.key == pygame.K_g:
+                show_grid = not show_grid
 
     screen.fill("black")
     head = draw_snake(screen,snake)
     frame_count += 1
+
+    # update numpy grid
+    update_grid(snake, fruit_x, fruit_y)
+
+    # draw grid overlay (toggle with G)
+    if show_grid:
+        grid_font = pygame.font.SysFont("consolas", 14)
+        for r in range(grid_rows):
+            for c in range(grid_cols):
+                val = grid[r, c]
+                if val != 0:
+                    label = grid_font.render(str(val), True, "white")
+                    screen.blit(label, (c * head_size + 7, r * head_size + 4))
+                # draw gridlines
+                pygame.draw.rect(screen, (40, 40, 40),
+                    pygame.Rect(c * head_size, r * head_size, head_size, head_size), 1)
 
     # draw fruit
     fruit = pygame.Rect((fruit_x,fruit_y),(head_size,head_size))
